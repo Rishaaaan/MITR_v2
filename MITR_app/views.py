@@ -42,6 +42,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
+    print("balls")
     return redirect('login')
 
 
