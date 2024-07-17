@@ -3,8 +3,6 @@
 import os
 import sys
 
-print ("test")
-
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'MITR_v2.settings')
