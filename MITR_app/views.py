@@ -13,9 +13,7 @@ from django.utils.timezone import now
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
-import csv
-from django.views.decorators.csrf import csrf_exempt
-import xlsxwriter, io
+import xlsxwriter
 
 User=get_user_model()
 
@@ -42,7 +40,6 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    print("balls")
     return redirect('login')
 
 
