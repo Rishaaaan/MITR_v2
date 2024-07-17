@@ -165,8 +165,10 @@
                 <p>
                     {% if is_employee %}
                         You're logged in as an employee: <br>{{ user.username }}
-                    {% else %}
+                    {% elif is_superuser %}
                         You're logged in as a co-ordinator: <br>{{ user.username }}
+                    {% else %}
+                        You are unemployed <br>{{user.username}}
                     {% endif %}
                 </p>
                 <form method="POST" action="{% url 'logout' %}">

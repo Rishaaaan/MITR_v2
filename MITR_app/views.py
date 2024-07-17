@@ -9,13 +9,14 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from datetime import date, datetime, timedelta
 from django.http import HttpResponse
-from django.utils.timezone import now 
+from django.utils.timezone import now
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
 import xlsxwriter
 
-User=get_user_model()
+User = get_user_model()
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -38,10 +39,10 @@ def login_view(request):
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
 
+
 def logout_view(request):
     logout(request)
     return redirect('login')
-
 
 def register_view(request):
     if request.method == 'POST':
@@ -68,11 +69,10 @@ def register_view(request):
         else:
             # Log form errors
             print("Form is invalid:", form.errors)
-            messages.error(request, "Registration failed. Please check the form for errors.")
+            messages.error(request, f"Registration failed,{form.errors} Please check the form for errors.")
     else:
         form = RegistrationForm()
     return render(request, 'register.html', {'form': form})
-
 
 
 @login_required
@@ -81,20 +81,23 @@ def dashboard_view(request):
     user = request.user  # Get the logged-in user
     company = user.company  # Get the company of the logged-in user
     is_employee = request.session.get('is_employee', False)  # Get employee status from session
+    #superusers = User.objects.filter(is_superuser=True)
+    # tasks = Task.objects.all()
 
     if user.is_superuser:
-        is_employee = False  # Superuser should be treated as an employer
-        print('henlo me preethi')
+        is_employee = False
 
-    elif is_employee:
+    if is_employee:
         # Filter tasks assigned to the logged-in employee
         tasks = Task.objects.filter(employee__email=user.email)
-        print('balle balle de sahava shava')
+
+    if not user.is_superuser:
+        tasks = Task.objects.filter(employee__email=user.email)
+
     else:
-        
         # Filter tasks based on employees who belong to the same company as the logged-in user
         tasks = Task.objects.filter(employee__company=company)
-        
+
     if search_query:
         # Filter tasks based on the search query
         tasks = tasks.filter(title__icontains=search_query)
@@ -105,10 +108,10 @@ def dashboard_view(request):
         'search_query': search_query,
         'is_employee': is_employee,
         'is_superuser': user.is_superuser  # Pass is_superuser flag to the template
-    })  
+    })
 
 
-def add_task_view(request):  
+def add_task_view(request):
     from .tasks import send_initial_email
     form = TaskForm(user=request.user)  # Pass the user to the form
     form_has_errors = False
@@ -125,10 +128,11 @@ def add_task_view(request):
 
     return render(request, 'add_task.html', {'form': form, 'form_has_errors': form_has_errors})
 
+
 def add_employee_view(request):
     # Check if the user is authenticated
     if not request.user.is_authenticated:
-       return redirect('login')
+        return redirect('login')
 
     # Retrieve the logged-in user's company
     company = request.user.company
@@ -151,6 +155,7 @@ def add_employee_view(request):
 
     return render(request, 'add_employee.html', {'form': form})
 
+
 @login_required
 def task_view(request, task_id):
     task = get_object_or_404(Task, id=task_id)
@@ -166,13 +171,14 @@ def task_view(request, task_id):
             task.completed_date = datetime.today().date()
             task.save()
         return redirect('task_view', task_id=task.id)
-    
+
     context = {
         'task': task,
         'today': now().date(),
         'is_employee': is_employee,
     }
     return render(request, 'task_view.html', context)
+
 
 def delete_task_view(request, task_id):
     # Get the task object or return a 404 error if not found
@@ -187,6 +193,7 @@ def delete_task_view(request, task_id):
 
     # Redirect to the dashboard or any other appropriate page after deletion
     return redirect('dashboard')
+
 
 def set_incomplete_view(request, task_id):
     # Get the task object or return a 404 error if not found
@@ -204,10 +211,12 @@ def set_incomplete_view(request, task_id):
     # Redirect to the task view or any other appropriate page after updating
     return redirect('task_view', task_id=task.id)
 
+
 def employee_list_view(request):
     company = request.user.company
     employees = Employee.objects.filter(company=company)
     return render(request, 'employee_list.html', {'employees': employees})
+
 
 def remove_employee_view(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
@@ -216,6 +225,7 @@ def remove_employee_view(request, employee_id):
         messages.success(request, 'Employee removed successfully.')
         return redirect('employee_list')
     return render(request, 'confirm_remove_employee.html', {'employee': employee})
+
 
 def confirm_remove_employee(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
@@ -226,26 +236,29 @@ def confirm_remove_employee(request, employee_id):
 
     return render(request, 'confirm_remove_employee.html', {'employee': employee})
 
+
 def collect_employee_data(employee_id):
     employee = Employee.objects.get(id=employee_id)
     total_tasks = Task.objects.filter(employee=employee).count()
     completed_tasks = Task.objects.filter(employee=employee, completed=True).count()
-    overdue_tasks = Task.objects.filter(employee=employee, completed=False, submission_date__lt=datetime.now().date()).count()
+    overdue_tasks = Task.objects.filter(employee=employee, completed=False,
+                                        submission_date__lt=datetime.now().date()).count()
 
     data = {
         'total_tasks': total_tasks,
         'completed_tasks': completed_tasks,
         'overdue_tasks': overdue_tasks
     }
-    
+
     return employee.name, data
+
 
 def plot_employee_progress(employee_id):
     employee_name, data = collect_employee_data(employee_id)
-    colors=['blue', 'green', 'red']
+    colors = ['blue', 'green', 'red']
     df = pd.DataFrame([data], index=[employee_name])
-    ax = df.plot(kind='bar', figsize=(10, 6),color=colors)
-    
+    ax = df.plot(kind='bar', figsize=(10, 6), color=colors)
+
     plt.title(f'{employee_name} Task Progress')
     plt.xlabel('Tasks')
     plt.ylabel('Number of Tasks')
@@ -258,11 +271,12 @@ def plot_employee_progress(employee_id):
     image_dir = os.path.join('static', 'images')  # Ensure 'images' directory exists inside 'static'
     os.makedirs(image_dir, exist_ok=True)  # Create directory if it doesn't exist
     image_path = os.path.join(image_dir, image_filename)
-    
+
     plt.savefig(image_path)
     plt.close()
-    
+
     return os.path.join('images', image_filename)
+
 
 def employee_progress(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
@@ -285,6 +299,7 @@ def employee_progress(request, employee_id):
 
     return render(request, 'employee_progress.html', context)
 
+
 def generate_summary(date):
     start_date = datetime.datetime.combine(date, datetime.time.min)
     end_date = datetime.datetime.combine(date, datetime.time.max)
@@ -301,6 +316,7 @@ def generate_summary(date):
     }
 
     return summary
+
 
 def summary_report(request):
     selected_date_str = request.GET.get('date', datetime.now().strftime('%Y-%m-%d'))
@@ -342,6 +358,7 @@ def summary_report(request):
         'report_type': report_type,
         'status_filter': status_filter
     })
+
 
 def download_summary_report(request, date, report_type, status_filter):
     selected_date = datetime.strptime(date, '%Y-%m-%d').date()
