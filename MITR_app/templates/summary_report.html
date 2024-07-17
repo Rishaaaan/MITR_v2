@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Summary Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #333;
+            color: white;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            outline: none;
+            color: #fff;
+            background-color: #333;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 9px #999;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #555;
+        }
+        .btn:active {
+            background-color: #555;
+            box-shadow: 0 5px #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Summary Report</h1>
+        <form method="get">
+            <label for="date">Select Date:</label>
+            <input type="date" id="date" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+            <select id="report_type" name="report_type">
+                <option value="daily" {% if report_type == 'daily' %}selected{% endif %}>Daily</option>
+                <option value="weekly" {% if report_type == 'weekly' %}selected{% endif %}>Weekly</option>
+                <option value="monthly" {% if report_type == 'monthly' %}selected{% endif %}>Monthly</option>
+            </select>
+            <select id="status_filter" name="status_filter">
+                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
+                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="overdue" {% if status_filter == 'overdue' %}selected{% endif %}>Overdue</option>
+                <option value="completed_overdue" {% if status_filter == 'completed_overdue' %}selected{% endif %}>Completed Overdue</option>
+            </select>
+            <button type="submit" class="btn">Get Report</button>
+        </form>
+        <div class="main-content">
+            <h2>Tasks Report for {{ selected_date }}</h2>
+            <table>
+                <tr>
+                    <th>Task Title</th>
+                    <th>Description</th>
+                    <th>Client Company</th>
+                    <th>Client Phone Number</th>
+                    <th>Email</th>
+                    <th>Date Added</th>
+                    <th>Submission Date</th>
+                    <th>Completed Date</th>
+                    <th>Status</th>
+                    <th>Employee</th>
+                </tr>
+                {% for task in all_tasks %}
+                <tr>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.description }}</td>
+                    <td>{{ task.client_company }}</td>
+                    <td>{{ task.client_phone_number }}</td>
+                    <td>{{ task.email }}</td>
+                    <td>{{ task.date_added }}</td>
+                    <td>{{ task.submission_date }}</td>
+                    <td>{{ task.completed_date }}</td>
+                    <td>
+                        {% if task.completed %}
+                            {% if task.completed_date > task.submission_date %}
+                                Completed Overdue
+                            {% else %}
+                                Completed
+                            {% endif %}
+                        {% elif task.submission_date < selected_date %}
+                            Overdue
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </td>
+                    <td>{{ task.employee.name }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <form method="post" action="{% url 'download_summary_report' selected_date report_type status_filter %}">
+                {% csrf_token %}
+                <button type="submit" class="btn">Download Report as Excel</button>
+            </form>
+        </div>
+        <p>Back To <a href="{% url 'dashboard' %}"> Dashboard</a>.</p>
+    </div>
+</body>
+</html>

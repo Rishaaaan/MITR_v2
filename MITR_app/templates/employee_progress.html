@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ employee.name }}'s Progress</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .employee-details {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .employee-details div {
+            flex: 1;
+            margin: 10px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .employee-details div h2 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .employee-details div p {
+            margin: 0;
+            font-size: 16px;
+        }
+        .progress-graph {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .progress-graph img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .task-list {
+            margin: 20px 0;
+        }
+        .task-list h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .task-table th, .task-table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        .status-pending {
+            color: blue;
+        }
+        .status-overdue {
+            color: red;
+        }
+        .status-completed {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ employee.name }}'s Progress</h1>
+        <div class="employee-details">
+            <div>
+                <h2>Name</h2>
+                <p>{{ employee.name }}</p>
+            </div>
+            <div>
+                <h2>Email</h2>
+                <p>{{ employee.email }}</p>
+            </div>
+            <div>
+                <h2>Phone Number</h2>
+                <p>{{ employee.phone_number }}</p>
+            </div>
+            <div>
+                <h2>Total Tasks</h2>
+                <p>{{ total_tasks }}</p>
+            </div>
+            <div>
+                <h2>Completed Tasks</h2>
+                <p>{{ completed_tasks }}</p>
+            </div>
+            <div>
+                <h2>Pending Tasks</h2>
+                <p>{{ pending_tasks }}</p>
+            </div>
+        </div>
+        <div class="progress-graph">
+            <h2>Progress Graph</h2>
+            <img src="{% static progress_graph_url %}" alt="Employee Task Progress">
+        </div>
+        <div class="task-list">
+            <h2>Task List</h2>
+            <table class="task-table">
+                <thead>
+                    <tr>
+                        <th>Task Title</th>
+                        <th>Client Name</th>
+                        <th>Client Email</th>
+                        <th>Date Added</th>
+                        <th>Submission Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.title }}</td>
+                        <td>{{ task.client_company }}</td>
+                        <td>{{ task.email }}</td>
+                        <td>{{ task.date_added }}</td>
+                        <td>{{ task.submission_date }}</td>
+                        <td>
+                            {% if task.completed %}
+                                    {% if task.completed_date > task.submission_date %}
+                                        <span class="status-completed_overdue">Completed Overdue</span>
+                                    {% else %}
+                                        <span class="status-completed">Completed</span>
+                                    {% endif %}
+                                {% elif task.submission_date < today %}
+                                    <span class="status-overdue">Overdue</span>
+                                {% else %}
+                                    <span class="status-pending">Pending</span>
+                                {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No tasks found for this employee.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

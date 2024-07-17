@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Detail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative; /* Position relative for absolute positioning */
+        }
+        h1 {
+            text-align: center;
+        }
+        .task-detail {
+            margin-bottom: 20px;
+        }
+        .task-detail p {
+            margin: 5px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            color: white;
+        }
+        .pending {
+            background-color: blue;
+        }
+        .overdue {
+            background-color: #d9534f;
+        }
+        .completed {
+            background-color: #5cb85c;
+        }
+        .complete-task-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            display: block;
+            margin: auto;
+            margin-top: 20px;
+        }
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        /* Style for delete button */
+        .delete-task-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: #c61812; /* Red color for delete button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px; /* Same padding for both buttons */
+            cursor: pointer;
+            width: 150px; 
+        }
+
+        .incomplete-task-btn {
+            position: absolute;
+            bottom: 60px;
+            right: 20px; /* Adjusted right position for the "Set as Incomplete" button */
+            background-color: #c61812; /* Red color for delete button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px; /* Same padding for both buttons */
+            cursor: pointer;
+            width: 150px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ task.title }}</h1>
+        <div class="task-detail">
+            <p><strong>Description:</strong> {{ task.description }}</p>
+            <p><strong>Email:</strong> {{ task.email }}</p>
+            <p><strong>Assigned Employee:</strong> {{ task.employee.name }}</p>
+            <p><strong>Date Added:</strong> {{ task.date_added }}</p>
+            <p><strong>Submission Date:</strong> {{ task.submission_date }}</p>
+            <p><strong>Remind Every:</strong> {{ task.remind_every }}</p>
+        </div>
+        <div class="status {% if task.completed %}completed{% elif task.submission_date > today %}pending{% else %}overdue{% endif %}">
+            {% if task.completed %}
+                Completed
+            {% elif task.submission_date > today %}
+                Pending
+            {% else %}
+                Overdue
+            {% endif %}
+        </div>
+
+        <!-- Display message based on completion status -->
+        <div class="message">
+            {% if task.employee_marked_completed %}
+                {{ task.employee.name }} has marked this task as completed.
+            {% else %}
+                {{ task.employee.name }} has not marked this task as completed.
+            {% endif %}
+        </div>
+
+        <!-- Form for completing the task -->
+        <form method="POST" action="{% url 'task_view' task.id %}">
+            {% csrf_token %}
+            {% if is_employee %}
+                <button type="submit" name="mark_as_completed" class="complete-task-btn">
+                    Mark as Completed
+                </button>
+            {% else %}
+                <button type="submit" name="complete_task" class="complete-task-btn">
+                    Complete Task
+                </button>
+            {% endif %}
+        </form>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+
+        {% if not is_employee %}
+        <!-- Delete button for employers -->
+        <form method="post" action="{% url 'delete_task' task.id %}">
+            {% csrf_token %}
+            <button type="submit" class="delete-task-btn">Delete Task</button>
+        </form>
+        {% endif %}
+        {% if task.completed and not is_employee%}
+        <form method="POST" action="{% url 'set_incomplete' task.id %}">
+            {% csrf_token %}
+            <button type="submit" class="incomplete-task-btn">Set as Incomplete</button>
+        </form>
+{% endif %}
+    </div>
+</body>
+</html>
