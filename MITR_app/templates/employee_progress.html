@@ -8,13 +8,13 @@
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif ;
+            background-color: #8e8c8cc3;
         }
         .container {
             max-width: 900px;
             margin: 50px auto;
-            background-color: #fff;
+            background-color:rgba(235, 233, 233, 0.945);
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
@@ -34,7 +34,7 @@
             flex: 1;
             margin: 10px;
             padding: 20px;
-            background-color: #f9f9f9;
+            background-color: #78787834;
             border: 1px solid #ddd;
             border-radius: 8px;
         }
@@ -81,6 +81,23 @@
         .status-completed {
             color: green;
         }
+        .status-completed_overdue {
+            color: orange; /* or any other color you prefer */
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 16px;
+            margin-left: 30cap;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -111,6 +128,10 @@
                 <h2>Pending Tasks</h2>
                 <p>{{ pending_tasks }}</p>
             </div>
+            <div>
+                <h2>Overdue Tasks</h2>
+                <p>{{ overdue_tasks }}</p>
+            </div>
         </div>
         <div class="progress-graph">
             <h2>Progress Graph</h2>
@@ -139,16 +160,16 @@
                         <td>{{ task.submission_date }}</td>
                         <td>
                             {% if task.completed %}
-                                    {% if task.completed_date > task.submission_date %}
-                                        <span class="status-completed_overdue">Completed Overdue</span>
-                                    {% else %}
-                                        <span class="status-completed">Completed</span>
-                                    {% endif %}
-                                {% elif task.submission_date < today %}
-                                    <span class="status-overdue">Overdue</span>
+                                {% if task.completed_date > task.submission_date %}
+                                    <span class="status-completed_overdue">Completed Overdue</span>
                                 {% else %}
-                                    <span class="status-pending">Pending</span>
+                                    <span class="status-completed">Completed</span>
                                 {% endif %}
+                            {% elif task.submission_date < today %}
+                                <span class="status-overdue">Overdue</span>
+                            {% else %}
+                                <span class="status-pending">Pending</span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}
@@ -158,6 +179,12 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <br>
+            <form action="{% url 'confirm_remove_employee' employee.id %}" method="get">
+                <button type="submit" class="btn btn-danger">
+                    Remove Employee
+                </button>
+            </form>
         </div>
     </div>
 </body>

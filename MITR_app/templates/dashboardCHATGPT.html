@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!------------------------------------------ STYLES --------------------------------------------->
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Google Sans', sans-serif;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 200px;
+            height: 100%;
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-link {
+            text-decoration: none;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            height: 70px;
+            /* Increased button height */
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            padding: 0 10px;
+            /* Increased padding */
+            font-size: 15px;
+            /* Font size */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-family: 'Google Sans', sans-serif;
+        }
+
+        .sidebar-btn:hover {
+            background-color: #444;
+        }
+
+        .sidebar-btn i {
+            margin-right: 10px;
+        }
+
+        .sidebar-btn span {
+            margin-left: auto;
+            text-align: right;
+            white-space: normal;
+        }
+
+        .sidebar.collapsed .sidebar-btn span {
+            display: none;
+        }
+
+        .version-text {
+            margin-top: auto;
+            display: none;
+            text-align: center;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .sidebar:not(.collapsed) .version-text {
+            display: block;
+        }
+
+        .dashboard {
+            margin-left: 220px;
+            margin-right: 20px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .dashboard.collapsed {
+            margin-left: 100px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info .current-user {
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .user-info .logout-btn {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .user-info .logout-btn:hover {
+            background-color: #444;
+        }
+
+        .search-bar {
+            width: 30%;
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .search-bar form {
+            display: flex;
+            width: 100%;
+        }
+
+        .search-bar input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-right: none;
+            border-radius: 20px 0 0 20px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .search-bar button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 0 20px 20px 0;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-bar button:hover {
+            background-color: #444;
+        }
+
+        .search-bar button i {
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            /* Add blur effect */
+        }
+
+        .popup-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 45%;
+            /* Set width to 60% of the screen */
+            max-height: 85vh;
+            /* Increased maximum height by 5% */
+            min-height: 50vh;
+            /* Minimum height of 50% of viewport height */
+            overflow-y: auto;
+            /* Enable vertical scrolling if necessary */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            font-family: 'Google Sans', sans-serif;
+        }
+
+        .popup-content h2 {
+            text-align: center;
+            margin: 0 0 20px;
+        }
+
+        .popup-content label {
+            display: block;
+            margin-bottom: 10px;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 16px;
+        }
+
+        .popup-content input,
+        .popup-content select,
+        .popup-content textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            resize: vertical;
+            font-family: 'Google Sans', sans-serif;
+        }
+
+        .popup-content textarea {
+            height: 100px;
+        }
+
+        .popup-content .save-btn {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            width: 100%;
+            display: block;
+            margin: 0 auto;
+            transition: background-color 0.3s ease;
+            font-family: 'Google Sans', sans-serif;
+        }
+
+        .popup-content .save-btn:hover {
+            background-color: #444;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            background: white;
+            border: none;
+            color: #333;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 50%;
+            padding: 5px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+            text-align: center;
+            /* Center error message */
+        }
+
+        .logout-option {
+            padding-left: 15px;
+        }
+    </style>
+
+    <!------------------------------------------- HTML ---------------------------------------------->
+
+</head>
+
+<body>
+    <div class="sidebar">
+        <button class="sidebar-btn collapse-btn">
+            <i class="fas fa-angle-double-left"></i>
+            <span>Collapse</span>
+        </button>
+        <button class="sidebar-btn add-task-btn">
+            <i class="fas fa-plus"></i>
+            <span>Add Task</span>
+        </button>
+        <button class="sidebar-btn add-employee-btn">
+            <i class="fas fa-user-plus"></i>
+            <span>Add<br>Employee</span>
+        </button>
+        <a href="{% url 'employee_list' %}" class="sidebar-link">
+            <button class="sidebar-btn">
+                <i class="fas fa-users"></i>
+                <span>Employee Management</span>
+            </button>
+        </a>
+        <a href="{% url 'summary_report' %}" class="sidebar-link">
+            <button class="sidebar-btn">
+                <i class="fas fa-chart-line"></i>
+                <span>Summary<br>Report</span>
+            </button>
+        </a>
+        <button class="sidebar-btn logout-btn logout-option">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </button>
+        <div class="version-text">
+            <p>Version 1.0.0</p>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="dashboard-header">
+            <h1>Task Management System</h1>
+            <div class="user-info">
+                <span class="current-user">Welcome, {{ user.username }}</span>
+                <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <form>
+                <input type="text" placeholder="Search...">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Task ID</th>
+              <th>Task Title</th>
+              <th>Client Name</th>
+              <th>Client Email</th>
+              {% if is_superuser %}
+                <th>Client Phone Number</th>
+              {% endif %}
+              <th>Employee Assigned</th>
+              <th>Date Assigned</th>
+              <th>Deadline</th>
+              <th>Details</th>
+              <th>Status</th>
+              {% if is_superuser %}
+                <th>Verification</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Iterate over tasks and display them -->
+            {% for task in tasks %}
+            <tr>
+                <td>{{task.task_id}}</td>
+                <td>{{ task.title }}</td>
+                <td>{{ task.client_company }}</td>
+                <td>{{ task.email }}</td>
+                {% if is_superuser %}
+                    <td>{{ task.client_phone_number }}</td>
+                {% endif %}
+                <td>{{ task.employee }}</td>
+                <td>{{ task.date_added }}</td>
+                <td>{{ task.submission_date }}</td>
+                <td><a href="{% url 'task_view' task.id %}">Open</a></td>
+                <td>
+                    {% if task.completed %}
+                        {% if task.completed_date > task.submission_date %}
+                            <p class="boxgreen"><span class="status-completed_overdue">Completed Overdue</span></p>
+                        {% else %}
+                            <p class="boxgreen"><span class="status-completed">Completed</span></p>
+                        {% endif %}
+                    {% elif task.submission_date < today and task.employee_marked_completed %}
+                        <div class="status-overdue-marked-completed">
+                            <span class="status-overdue">To be Verified</span>
+                        </div>
+                    {% elif task.submission_date < today %}
+                    <div class="boxred">
+                        <span class="status-overdue">Overdue</span>
+                    </div>
+                    {% else %}  
+                        {% if not task.employee_marked_completed %}
+                        <div class="boxblue">
+                            <span class="status-pending">Pending</span>
+                        </div>
+                        {% elif task.employee_marked_completed %}
+                            <div class="status-pending-marked-completed">
+                                <span class="status-pending">To be Verified</span>
+                            </div>
+                        {% else %}
+                            pass
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">No tasks assigned to you yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+
+    <!-- Add Task Popup -->
+    <div id="addTaskPopup" class="popup">
+    <div class="popup-content">
+        <button class="close-btn" onclick="closeAddTaskPopup()">×</button>
+        <h2>Add New Task</h2>
+        <form method="post" id="addTaskForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="title">Subject:</label>
+                <input type="text" id="title" name="title" value="{{ form.title.value|default_if_none:'' }}">
+                {% if form.title.errors %}
+                    <div class="error">{{ form.title.errors|join:", " }}</div>
+                {% endif %}
+
+                <label for="description">Description:</label>
+                <textarea id="description" name="description">{{ form.description.value|default_if_none:'' }}</textarea>
+                {% if form.description.errors %}
+                    <div class="error">{{ form.description.errors|join:", " }}</div>
+                {% endif %}
+
+                <label for="email">Client's Mail:</label>
+                <input type="email" id="email" name="email" value="{{ form.email.value|default_if_none:'' }}">
+                {% if form.email.errors %}
+                    <div class="error">{{ form.email.errors|join:", " }}</div>
+                {% endif %}
+
+                <label for="client_company">Client's Company:</label>
+                <input type="text" id="client_company" name="client_company" value="{{ form.client_company.value|default_if_none:'' }}">
+                {% if form.client_company.errors %}
+                    <div class="error">{{ form.client_company.errors|join:", " }}</div>
+                {% endif %}
+
+                <label for="client_phone_number">Client's Phone Number:</label>
+                <input type="text" id="client_phone_number" name="client_phone_number" value="{{ form.client_phone_number.value|default_if_none:'' }}">
+                {% if form.client_phone_number.errors %}
+                    <div class="error">{{ form.client_phone_number.errors|join:", " }}</div>
+                {% endif %}
+
+                <label for="employee">Employee:</label>
+                <select id="employee" name="employee" class="form-control">
+                    <option value="">Select Employee</option>
+                    {% for employee in form.fields.employee.queryset %}
+                        <option value="{{ employee.id }}" {% if form.employee.value == employee.id %}selected{% endif %}>{{ employee.name }}</option>
+                    {% endfor %}
+                </select>
+                {% if form.employee.errors %}
+                    <div class="error">{{ form.employee.errors|join:", " }}</div>
+                {% endif %}
+
+                <label for="remind_every">Remind every:</label>
+                <select id="remind_every" name="remind_every">
+                    {% for value, label in form.fields.remind_every.choices %}
+                        <option value="{{ value }}" {% if form.remind_every.value == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                {% if form.remind_every.errors %}
+                    <div class="error">{{ form.remind_every.errors|join:", " }}</div>
+                {% endif %}
+
+                <label for="submission_date">Submission Date:</label>
+                {{ form.submission_date }}
+                {% if form.submission_date.errors %}
+                    <div class="error">{{ form.submission_date.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+            <button class="save-btn" type="submit">Add Task</button>
+        </form>
+        <div id="taskError" class="error"></div>
+    </div>
+</div>
+
+<!-- Add Employee Popup -->
+<div id="addEmployeePopup" class="popup">
+    <div class="popup-content">
+        <button class="close-btn" onclick="closeAddEmployeePopup()">×</button>
+        <h2>Add New Employee</h2>
+        <form id="addEmployeeForm">
+            <label for="employeeName">Employee Name:</label>
+            <input type="text" id="employeeName" name="employeeName" required>
+
+            <label for="employeeEmail">Email:</label>
+            <input type="email" id="employeeEmail" name="employeeEmail" required>
+
+            <label for="employeeRole">Role:</label>
+            <select id="employeeRole" name="employeeRole" required>
+                <option value="Manager">Manager</option>
+                <option value="Developer">Developer</option>
+                <option value="Designer">Designer</option>
+                <option value="QA">QA</option>
+            </select>
+
+            <button type="submit" class="save-btn">Save Employee</button>
+        </form>
+        <div id="employeeError" class="error"></div>
+    </div>
+</div>
+
+<!---------------------------------------- SCRIPT ------------------------------------------------>
+
+<script>
+    const addTaskPopup = document.getElementById('addTaskPopup');
+    const addEmployeePopup = document.getElementById('addEmployeePopup');
+
+    document.querySelector('.add-task-btn').addEventListener('click', function () {
+        openAddTaskPopup();
+    });
+
+    document.querySelector('.add-employee-btn').addEventListener('click', function () {
+        openAddEmployeePopup();
+    });
+
+    function openAddTaskPopup() {
+        addTaskPopup.style.display = 'block';
+    }
+
+    function closeAddTaskPopup() {
+        addTaskPopup.style.display = 'none';
+        document.getElementById('taskError').innerText = '';
+        document.getElementById('addTaskForm').reset();
+    }
+
+    function openAddEmployeePopup() {
+        addEmployeePopup.style.display = 'block';
+    }
+
+    function closeAddEmployeePopup() {
+        addEmployeePopup.style.display = 'none';
+        document.getElementById('employeeError').innerText = '';
+        document.getElementById('addEmployeeForm').reset();
+    }
+
+    document.getElementById('addTaskForm').addEventListener('submit', function (e) {
+        // e.preventDefault(); // This prevents form submission, so it's removed.
+        
+        // No need to manually collect form data if we are submitting the form directly.
+        // The form data will be sent to the server automatically.
+
+        closeAddTaskPopup();
+    });
+
+    document.getElementById('addEmployeeForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const employeeName = document.getElementById('employeeName').value.trim();
+        const employeeEmail = document.getElementById('employeeEmail').value.trim();
+        const employeeRole = document.getElementById('employeeRole').value.trim();
+
+        if (!employeeName || !employeeEmail || !employeeRole) {
+            document.getElementById('employeeError').innerText = 'Please fill in all fields.';
+            return;
+        }
+
+        closeAddEmployeePopup();
+    });
+
+    document.querySelector('.collapse-btn').addEventListener('click', function () {
+        const sidebar = document.querySelector('.sidebar');
+        const dashboard = document.querySelector('.dashboard');
+
+        sidebar.classList.toggle('collapsed');
+        dashboard.classList.toggle('collapsed');
+    });
+</script>
+
+</body>
+
+</html>

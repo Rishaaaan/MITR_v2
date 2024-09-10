@@ -11,6 +11,11 @@ from .tasks import send_reminder_email
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .tasks import send_initial_email
+import logging
+import pytz
+
+logger = logging.getLogger(__name__)
+
 
 settings.AUTH_USER_MODEL
 
@@ -42,9 +47,17 @@ class Task(models.Model):
         (timedelta(days=2), '2 Days'),
         (timedelta(days=3), '3 Days'),
         (timedelta(days=7), '1 Week'),
-        (timedelta(weeks=2), '2 Week'),
-        (timedelta(weeks=3), '3 Week'),
+        (timedelta(weeks=2), '2 Weeks'),
+        (timedelta(weeks=3), '3 Weeks'),
         (timedelta(weeks=4), '1 Month'),
+    )
+    task_id = models.CharField(
+        max_length=50,
+        unique=True,
+        editable=False,  # Prevent manual editing in forms/admin
+        default=None,
+        null=True,  # Allow null initially for pre-save generation
+        blank=True
     )
     title = models.CharField(max_length=100)
     description = models.TextField()
@@ -52,17 +65,19 @@ class Task(models.Model):
     employee = models.ForeignKey('Employee', on_delete=models.CASCADE, null=True, blank=True)
     remind_every = models.DurationField()
     submission_date = models.DateField(default=datetime.now())
-    date_added = models.DateField(default=datetime.now())
+    date_added = models.DateTimeField(default=timezone.now)
     completed = models.BooleanField(default=False)
     client_company = models.CharField(max_length=100,null=True)
-    client_phone_number = models.IntegerField(max_length=15)
+    client_phone_number = models.IntegerField()
     employee_marked_completed = models.BooleanField(default=False)
     next_reminder_date = models.DateTimeField(default=timezone.now)
-    completed_date = models.DateField(null=True, blank=True)
+    completed_date = models.DateTimeField(null=True, blank=True)
+    overdue_reason = models.CharField(max_length=5000, null=True, default=False)
+    completed_by = models.ForeignKey(CustomUser, null=True, blank=True, on_delete=models.SET_NULL, related_name='completed_tasks')
+    completed_at = models.DateTimeField(null=True, blank=True)
+    rework_by = models.ForeignKey(CustomUser, null=True, blank=True, on_delete=models.SET_NULL, related_name='reworked_tasks')
+    rework_date = models.DateTimeField(null=True, blank=True)
 
-    def __str__(self):
-        return self.title
-    
     def save(self, *args, **kwargs):
         if not self.next_reminder_date:
             self.next_reminder_date = timezone.now() + self.remind_every
@@ -71,6 +86,17 @@ class Task(models.Model):
             self.completed_date = timezone.now().date()
             
         super(Task, self).save(*args, **kwargs)
+
+    def complete_task(self, user):
+        self.completed = True
+        self.completed_by = user
+        self.completed_at = timezone.now()
+        self.save()
+
+    def __str__(self):
+        return self.title
+
+    
     def send_task_email(self):
         subject = self.title
         message = f"""

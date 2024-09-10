@@ -5,13 +5,13 @@
     <title>Summary Report</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif ;
             background-color: #f0f0f0;
             margin: 0;
             padding: 0;
         }
         .container {
-            width: 80%;
+            width: 90%;
             margin: 0 auto;
             background-color: #fff;
             padding: 20px;
@@ -52,8 +52,8 @@
             color: #fff;
             background-color: #333;
             border: none;
-            border-radius: 15px;
-            box-shadow: 0 9px #999;
+            border-radius: 8px;
+            box-shadow: 0 3px #3c3c3c83;
             margin-top: 10px;
         }
         .btn:hover {
@@ -70,7 +70,7 @@
         <h1>Summary Report</h1>
         <form method="get">
             <label for="date">Select Date:</label>
-            <input type="date" id="date" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+            <input type="date" id="date" name="date" value="{{ selected_date|date:'y-m-d' }}">
             <select id="report_type" name="report_type">
                 <option value="daily" {% if report_type == 'daily' %}selected{% endif %}>Daily</option>
                 <option value="weekly" {% if report_type == 'weekly' %}selected{% endif %}>Weekly</option>
@@ -89,6 +89,7 @@
             <h2>Tasks Report for {{ selected_date }}</h2>
             <table>
                 <tr>
+                    <th>Task ID</th>
                     <th>Task Title</th>
                     <th>Description</th>
                     <th>Client Company</th>
@@ -102,6 +103,7 @@
                 </tr>
                 {% for task in all_tasks %}
                 <tr>
+                    <td>{{ task.task_id }}</td>
                     <td>{{ task.title }}</td>
                     <td>{{ task.description }}</td>
                     <td>{{ task.client_company }}</td>

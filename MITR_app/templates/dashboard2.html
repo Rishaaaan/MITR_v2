@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header {
+            background-color: #f2f2f2;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .line {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+        .top-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #f2f2f2;
+        }
+        .search-bar {
+            padding: 10px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .add-task-btn, .add-employee-btn, .remove-employee-btn, .employee-progress-btn, .summary-report-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            display: block;
+            width: 135px;
+            text-align: center;
+        }
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .task-table th, .task-table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        .status-pending {
+            color: rgb(0, 0, 0);
+        }
+        .status-overdue {
+            color: rgb(0, 0, 0);
+        }
+        .status-completed {
+            color: rgb(0, 0, 0);
+        }
+        .status-completed_overdue {
+            color: rgb(218, 2, 2);
+        }
+        .status-pending-marked-completed {
+            display: flex;
+            background: linear-gradient(to right, #b4c6e7 30%, rgba(0, 128, 0, 0.326) 75%);
+            width: 80px;
+            height: 50px;
+            border: 1px solid #aaaaaa;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 15px;
+            text-align: center;
+            vertical-align: middle;
+            justify-content: center;
+            align-items: center;
+        }
+        .status-overdue-marked-completed {
+            display: flex;
+            background: linear-gradient(to right, rgba(255, 0, 0, 0.441) 1%, rgba(0, 128, 0, 0.326) 75%);
+            width: 80px;
+            height: 50px;
+            border: 1px solid #aaaaaa;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 15px;
+            text-align: center;
+            vertical-align: middle;
+            justify-content: center;
+            align-items: center;
+        }
+        .box {
+            display: flex;
+            background-color: #ebeaea;
+            width: 80px;
+            height: 50px;
+            border: 1px solid #aaaaaa;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 15px;
+            text-align: center;
+            vertical-align: middle;
+            justify-content: center;
+            align-items: center;
+        }
+        .boxred {
+            display: flex;
+            background-color: rgba(255, 0, 0, 0.441);
+            width: 80px;
+            height: 50px;
+            border: 1px solid #aaaaaa;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 15px;
+            text-align: center;
+            vertical-align: middle;
+            justify-content: center;
+            align-items: center;
+        }
+        .boxgreen {
+            display: flex;
+            background-color: #c6efce;
+            width: 80px;
+            height: 50px;
+            border: 1px solid #aaaaaa;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 15px;
+            text-align: center;
+            vertical-align: middle;
+            justify-content: center;
+            align-items: center;
+        }
+        .boxblue {
+            display: flex;
+            background-color: #b4c6e7;
+            width: 80px;
+            height: 50px;
+            border: 1px solid #aaaaaa;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 15px;
+            text-align: center;
+            vertical-align: middle;
+            justify-content: center;
+            align-items: center;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info p {
+            margin: 0 10px 0 0;
+        }
+        .logout-btn {
+            padding: 10px 20px;
+            background-color: #000000e7;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .sidebar {
+            width: 60px;
+            height: 100vh;
+            background-color: #808080;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: width 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        .sidebar.expanded {
+            width: 200px;
+        }
+        .arrow-btn {
+            width: 100%;
+            padding: 10px 0;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .arrow-btn .arrow {
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+        .sidebar.expanded .arrow-btn .arrow {
+            transform: rotate(90deg);
+        }
+        .sidebar-icons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+        }
+        .sidebar-icons a {
+            color: white;
+            font-size: 24px;
+            margin: 10px 0;
+            transition: color 0.3s ease;
+        }
+        .sidebar.expanded .sidebar-icons {
+            display: none;
+        }
+        .sidebar-options {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            width: 100%;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity:  0.3s ease; /* Initially hidden */
+            transform: translateX(20px), 0.3s ease; /* Start from right */
+        }
+        .sidebar.expanded .sidebar-options {
+            display: flex;
+            opacity: 1; /* Show options when expanded */
+        }
+        .sidebar-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            width: 100%;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .sidebar-option:hover {
+            background-color: #555;
+        }
+        .sidebar-option i {
+            margin-right: 10px;
+        }
+        .content {
+            margin-left: 60px;
+            transition: margin-left 0.3s ease;
+            padding: 20px;
+        }
+        .sidebar.expanded ~ .content {
+            margin-left: 200px;
+        }
+    </style>
+</head>
+<body>
+    {% if not is_employee and is_superuser %}
+    <div class="sidebar" id="sidebar">
+        <button class="arrow-btn" onclick="toggleSidebar()">
+            &#9776; <!-- Hamburger icon -->
+            <span class="arrow">&#9654;</span> <!-- Right arrow icon -->
+        </button>
+        <div class="sidebar-icons">
+            <a href="{% url 'add_task' %}" class="icon"><i class="fas fa-tasks"></i></a>
+            <a href="{% url 'add_employee' %}" class="icon"><i class="fas fa-user-plus"></i></a>
+            <a href="{% url 'employee_list' %}" class="icon"><i class="fas fa-users"></i></a>
+            <a href="{% url 'summary_report' %}" class="icon"><i class="fas fa-file-alt"></i></a>
+        </div>
+        <div class="sidebar-options">
+            <a href="{% url 'add_task' %}" class="sidebar-option">
+                <i class="fas fa-tasks"></i>
+                <span class="sidebar-text">Add Task</span>
+            </a>
+            <a href="{% url 'add_employee' %}" class="sidebar-option">
+                <i class="fas fa-user-plus"></i>
+                <span class="sidebar-text">Add Employee</span>
+            </a>
+            <a href="{% url 'employee_list' %}" class="sidebar-option">
+                <i class="fas fa-users"></i>
+                <span class="sidebar-text">Employees</span>
+            </a>
+            <a href="{% url 'summary_report' %}" class="sidebar-option">
+                <i class="fas fa-file-alt"></i>
+                <span class="sidebar-text">Summary Report</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    <div class="content">
+        <div class="header">
+            <!-- Search Bar -->
+            <form method="GET" action="{% url 'dashboard' %}">
+                {% csrf_token %}
+                <input type="text" name="search" placeholder="Search..." class="search-bar" value="{{ search_query }}">
+                <button class="logout-btn" type="submit">Search</button>
+            </form>
+
+            <!-- User Info and Logout -->
+            <div class="user-info">
+                <p> 
+                    {% if is_employee %}
+                        You're logged in as an employee: <br>{{ user.username }} 
+                    {% elif is_superuser %}
+                        You're logged in as a co-ordinator: <br>{{ user.username }}
+                    {% else %}
+                        You are unemployed <br>{{user.username}}
+                    {% endif %}
+                </p>
+                <form method="POST" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i>Logout</button>
+                </form>
+            </div>
+        </div>
+        <div class="line"></div>
+        <div class="container">
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <h3>Current Tasks</h3>
+                <table class="task-table">
+                    <thead>
+                        <tr>
+                            <th>Task ID</th>
+                            <th>Task Title</th>
+                            <th>Client Name</th>
+                            <th>Client Email</th>
+                            {% if is_superuser %}
+                                <th>Client Phone Number</th>
+                            {% endif %}
+                            <th>Assigned Employee</th>
+                            <th>Date Added</th>
+                            <th>Submission Date</th>
+                            <th>View</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Iterate over tasks and display them -->
+                        {% for task in tasks %}
+                        <tr>
+                            <td>{{task.task_id}}</td>
+                            <td>{{ task.title }}</td>
+                            <td>{{ task.client_company }}</td>
+                            <td>{{ task.email }}</td>
+                            {% if is_superuser %}
+                                <td>{{ task.client_phone_number }}</td>
+                            {% endif %}
+                            <td>{{ task.employee }}</td>
+                            <td>{{ task.date_added }}</td>
+                            <td>{{ task.submission_date }}</td>
+                            <td><a href="{% url 'task_view' task.id %}">Open</a></td>
+                            <td>
+                                {% if task.completed %}
+                                    {% if task.completed_date > task.submission_date %}
+                                        <p class="boxgreen"><span class="status-completed_overdue">Completed Overdue</span></p>
+                                    {% else %}
+                                        <p class="boxgreen"><span class="status-completed">Completed</span></p>
+                                    {% endif %}
+                                {% elif task.submission_date < today and task.employee_marked_completed %}
+                                    <div class="status-overdue-marked-completed">
+                                        <span class="status-overdue">To be Verified</span>
+                                    </div>
+                                {% elif task.submission_date < today %}
+                                <div class="boxred">
+                                    <span class="status-overdue">Overdue</span>
+                                </div>
+                                {% else %}  
+                                    {% if not task.employee_marked_completed %}
+                                    <div class="boxblue">
+                                        <span class="status-pending">Pending</span>
+                                    </div>
+                                    {% elif task.employee_marked_completed %}
+                                        <div class="status-pending-marked-completed">
+                                            <span class="status-pending">To be Verified</span>
+                                        </div>
+                                    {% else %}
+                                        pass
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8">No tasks assigned to you yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // JavaScript function to toggle the sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('expanded');
+        }
+    </script>
+</body>
+</html>
